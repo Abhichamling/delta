@@ -1,0 +1,246 @@
+<nav class="navbar navbar-expand-lg bg-white sticky-top" id="mainNavbar">
+    <div class="container-fluid px-4 px-lg-5">
+        <!-- Logo -->
+        <a class="navbar-brand d-flex align-items-center" href="/listings">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 2L2 12L16 22L30 12L16 2Z" fill="#FF385C" stroke="#FF385C" stroke-width="1.5"/>
+                <path d="M16 22L2 12V26L16 32L30 26V12L16 22Z" fill="#FF385C" stroke="#FF385C" stroke-width="1.5"/>
+                <circle cx="16" cy="12" r="3" fill="white"/>
+            </svg>
+            <span style="color: #FF385C; font-weight: 600; font-size: 1.4rem; margin-left: 8px;">sirjanasizzu</span>
+        </a>
+
+        <!-- Center Search Bar (Desktop) - Airbnb Style -->
+        <div class="d-none d-md-block search-full" id="searchFull">
+            <div class="border rounded-pill shadow-sm bg-white" style="cursor: pointer; border: 1px solid #dddddd !important; transition: box-shadow 0.2s;">
+                <div class="d-flex align-items-center px-4 py-2" style="gap: 12px;">
+                    <span class="fw-semibold small" style="color: #222222;">Anywhere</span>
+                    <span style="color: #dddddd;">|</span>
+                    <span class="fw-semibold small" style="color: #222222;">Any week</span>
+                    <span style="color: #dddddd;">|</span>
+                    <span class="text-muted small">Add guests</span>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center ms-2" 
+                         style="width: 32px; height: 32px; background: #FF385C;">
+                        <i class="fa-solid fa-search text-white" style="font-size: 14px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Menu -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Host Link -->
+            <a href="/listings/new" class="text-decoration-none d-none d-lg-flex align-items-center gap-2" 
+               style="color: #222222; font-size: 0.9rem; font-weight: 500; padding: 8px 12px; border-radius: 30px; transition: background 0.2s;">
+                <span>Become a Host</span>
+            </a>
+            
+            <!-- Globe Icon -->
+            <div class="d-none d-md-block">
+                <i class="" style="color: #222222; font-size: 1.2rem; cursor: pointer;"></i>
+            </div>
+            
+            <!-- User Menu Dropdown -->
+            <div class="dropdown">
+                <button class="btn dropdown-toggle d-flex align-items-center gap-2 border rounded-pill py-2 px-3 bg-white" 
+                        type="button" data-bs-toggle="dropdown" 
+                        style="box-shadow: 0 1px 2px rgba(0,0,0,0.08); border: 1px solid #dddddd !important; background: white;" 
+                        id="userMenuButton">
+                    <i class="fa-solid fa-bars" style="color: #222222;"></i>
+                    <% if(!currentUser) { %>
+                        <i class="fa-regular fa-circle-user fs-4" style="color: #717171;"></i>
+                    <% } else { %>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 28px; height: 28px; background: #FF385C;">
+                            <span class="text-white small fw-semibold">
+                                <%= currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U' %>
+                            </span>
+                        </div>
+                    <% } %>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-2 py-2" style="min-width: 240px; margin-top: 8px;">
+                    <% if(!currentUser) { %>
+                        <li><a class="dropdown-item py-2" href="/login"><i class="" style="color: #222222;"></i>Login</a></li>
+                        <li><a class="dropdown-item py-2" href="/signup"><i class="" style="color: #222222;"></i>Sign up</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item py-2" href="/listings/new"><i class="" style="color: #222222;"></i>Become a Host</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-circle-question me-3" style="color: #222222;"></i>Help Center</a></li>
+                    <% } else { %>
+                        <li><a class="dropdown-item py-2" href="/listings/new"><i class="fa-regular fa-plus me-3" style="color: #222222;"></i>Add Experience</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-heart me-3" style="color: #222222;"></i>Wishlist</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-calendar me-3" style="color: #222222;"></i>Trips</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-message me-3" style="color: #222222;"></i>Messages</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item py-2" href="/notices"><i class="fa-regular fa-bullhorn me-3" style="color: #222222;"></i>Notice Board</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="/logout" method="POST">
+                                <button class="dropdown-item py-2 text-danger" type="submit">
+                                    <i class="fa-solid fa-sign-out-alt me-2"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Toggler Button for Mobile -->
+<button class="navbar-toggler d-md-none position-absolute top-0 end-0 mt-3 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavbar" style="border: none;">
+    <i class="fa-solid fa-bars fs-4"></i>
+</button>
+
+<!-- Mobile Menu -->
+<div class="collapse navbar-collapse d-md-none" id="mobileNavbar">
+    <div class="container-fluid px-4 py-3 bg-white">
+        <!-- Mobile Search -->
+        <div class="border rounded-2 shadow-sm bg-white mb-4" style="border: 1px solid #dddddd !important;">
+            <div class="p-3">
+                <div class="mb-3">
+                    <label class="fw-semibold small text-uppercase" style="color: #222222;">Where to?</label>
+                    <input type="text" class="form-control mt-1 border-0 p-0" placeholder="Search destinations" id="mobileSearchInput">
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="fw-semibold small text-uppercase" style="color: #222222;">Check in</label>
+                        <input type="date" class="form-control mt-1 border-0 p-0">
+                    </div>
+                    <div class="col-6">
+                        <label class="fw-semibold small text-uppercase" style="color: #222222;">Check out</label>
+                        <input type="date" class="form-control mt-1 border-0 p-0">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="fw-semibold small text-uppercase" style="color: #222222;">Guests</label>
+                    <select class="form-select mt-1 border-0 p-0">
+                        <option>Add guests</option>
+                    </select>
+                </div>
+                <button class="btn w-100 mt-3 rounded-pill" style="background: #FF385C; color: white; padding: 12px;">
+                    <i class="fa-solid fa-search me-2"></i> Search
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link py-2" href="/listings" style="color: #222222;">
+                    <i class="fa-solid fa-compass me-2" style="width: 24px;"></i> Explore
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link py-2" href="/notices" style="color: #222222;">
+                    <i class="fa-solid fa-bullhorn me-2" style="width: 24px;"></i> Notice Board
+                </a>
+            </li>
+            <% if (currentUser) { %>
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="/listings/new" style="color: #222222;">
+                        <i class="fa-solid fa-plus-circle me-2" style="width: 24px;"></i> Add Listing
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST">
+                        <button class="nav-link py-2 text-danger" type="submit" style="background: none; border: none;">
+                            <i class="fa-solid fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </form>
+                </li>
+            <% } else { %>
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="/login" style="color: #222222;">
+                        <i class="fa-solid fa-sign-in-alt me-2"></i> Login
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-2" href="/signup" style="color: #222222;">
+                        <i class="fa-solid fa-user-plus me-2"></i> Sign Up
+                    </a>
+                </li>
+            <% } %>
+        </ul>
+    </div>
+</div>
+
+<style>
+#mainNavbar {
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    padding: 12px 0;
+}
+
+.navbar-brand {
+    transition: opacity 0.2s;
+}
+
+.navbar-brand:hover {
+    opacity: 0.8;
+}
+
+.search-full .border:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+    border-color: #cccccc !important;
+}
+
+#userMenuButton:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+    background-color: #f7f7f7;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+@media (min-width: 992px) {
+    .navbar-brand span {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #mainNavbar {
+        padding: 12px 0;
+    }
+    
+    .navbar-brand span {
+        font-size: 1.2rem;
+    }
+}
+
+/* Custom scrollbar for mobile menu */
+#mobileNavbar {
+    max-height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 1000;
+}
+
+#mobileNavbar.show {
+    display: block;
+}
+</style>
+
+<script>
+// Close mobile menu when clicking a link
+document.querySelectorAll('#mobileNavbar .nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+        document.getElementById('mobileNavbar').classList.remove('show');
+    });
+});
+</script>

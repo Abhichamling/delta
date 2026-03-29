@@ -1,0 +1,206 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-light mb-3">
+            <i class="fa-solid fa-map-location-dot me-2" style="color: #8B5A2B;"></i>
+            Explore Experiences on Map
+        </h2>
+        <p class="text-muted small">Discover and book unique experiences across Nepal</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Map Column -->
+    <div class="col-lg-8 mb-4">
+        <div id="search-map" style="width: 100%; height: 600px;" class="rounded-4 shadow"></div>
+    </div>
+    
+    <!-- Listings Column -->
+    <div class="col-lg-4">
+        <div class="bg-light rounded-4 p-4" style="max-height: 600px; overflow-y: auto;">
+            <h5 class="fw-semibold mb-3">Experiences Nearby</h5>
+            
+            <% if (listings.length === 0) { %>
+                <p class="text-muted text-center py-4">No experiences found in this area</p>
+            <% } else { %>
+                <% listings.forEach(listing => { %>
+                <div class="card border-0 shadow-sm mb-3 listing-hover" 
+                     onclick="window.location='/listings/<%= listing._id %>'"
+                     style="cursor: pointer;">
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img src="<%= listing.images && listing.images[0] ? listing.images[0].url : 'https://images.unsplash.com/photo-1501785888041-af3ef285b470' %>" 
+                                 class="img-fluid rounded-start h-100" style="object-fit: cover; height: 100px; width: 100%;">
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body p-2">
+                                <h6 class="card-title fw-semibold mb-1"><%= listing.title %></h6>
+                                <p class="card-text small text-muted mb-1">
+                                    <i class="fa-solid fa-location-dot me-1" style="color: #8B5A2B;"></i>
+                                    <%= listing.location %>, <%= listing.country %>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold small">₹<%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %></span>
+                                    <span class="small"><i class="fa-regular fa-star text-warning me-1"></i> 4.8</span>
+                                </div>
+                                <% if(listing.duration) { %>
+                                <small class="text-muted d-block mt-1"><%= listing.duration %></small>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create map
+    const map = new ol.Map({
+        target: 'search-map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([85.3240, 27.7172]), // Kathmandu
+            zoom: 7
+        })
+    });
+
+    // Add markers for all listings
+    const features = [];
+    
+    <% listings.forEach(listing => { 
+        // Use listing coordinates or default to Kathmandu area with random offset
+        const lon = listing.longitude || 85.3240 + (Math.random() - 0.5) * 2;
+        const lat = listing.latitude || 27.7172 + (Math.random() - 0.5) * 2;
+    %>
+    
+    const marker<%= listing._id %> = new ol.Feature({
+        geometry: new ol.geom.Point(
+            ol.proj.fromLonLat([<%= lon %>, <%= lat %>])
+        ),
+        name: '<%= listing.title %>',
+        id: '<%= listing._id %>',
+        price: '<%= listing.price %>',
+        location: '<%= listing.location %>'
+    });
+    
+    marker<%= listing._id %>.setStyle(new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 8,
+            fill: new ol.style.Fill({color: '#8B5A2B'}),
+            stroke: new ol.style.Stroke({color: 'white', width: 2})
+        })
+    }));
+    
+    features.push(marker<%= listing._id %>);
+    <% }); %>
+
+    const vectorSource = new ol.source.Vector({
+        features: features
+    });
+
+    const vectorLayer = new ol.layer.Vector({
+        source: vectorSource
+    });
+
+    map.addLayer(vectorLayer);
+
+    // Add click handler to show listing
+    map.on('click', function(e) {
+        map.forEachFeatureAtPixel(e.pixel, function(feature) {
+            const id = feature.get('id');
+            if (id) {
+                window.location = '/listings/' + id;
+            }
+        });
+    });
+
+    // Change cursor on hover
+    map.on('pointermove', function(e) {
+        const hit = map.hasFeatureAtPixel(e.pixel);
+        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+    });
+
+    // Add popup on hover
+    const overlayContainer = document.createElement('div');
+    overlayContainer.className = 'map-popup';
+    overlayContainer.style.display = 'none';
+    document.body.appendChild(overlayContainer);
+
+    const popup = new ol.Overlay({
+        element: overlayContainer,
+        positioning: 'bottom-center',
+        offset: [0, -10]
+    });
+    map.addOverlay(popup);
+
+    map.on('pointermove', function(e) {
+        const feature = map.forEachFeatureAtPixel(e.pixel, function(feature) {
+            return feature;
+        });
+        
+        if (feature) {
+            const name = feature.get('name');
+            const price = feature.get('price');
+            const location = feature.get('location');
+            overlayContainer.innerHTML = `
+                <div class="bg-white p-2 rounded-3 shadow-sm">
+                    <strong class="small">${name}</strong><br>
+                    <span class="small text-muted">${location}</span><br>
+                    <span class="small fw-bold" style="color: #8B5A2B;">₹${price}</span>
+                </div>
+            `;
+            popup.setPosition(e.coordinate);
+            overlayContainer.style.display = 'block';
+        } else {
+            overlayContainer.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<style>
+.listing-hover {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.listing-hover:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.map-popup {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    pointer-events: none;
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.ol-control button {
+    background-color: #8B5A2B !important;
+    color: white !important;
+}
+
+.ol-control button:hover {
+    background-color: #6B4A2B !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #search-map {
+        height: 400px !important;
+    }
+}
+</style>

@@ -1,0 +1,410 @@
+<% layout("/layouts/boilerplate") %>
+
+<%- include('../includes/navbar') %>
+<%- include('../includes/flash') %>
+
+<!-- Category Filters - Scrolling Row -->
+<div class="category-filters">
+    <div class="container-fluid px-4 px-lg-5">
+        <div class="d-flex gap-4">
+            <!-- All -->
+            <a href="/listings" class="category-item <%= !category || category === 'All' ? 'active' : '' %>">
+                <i class="fa-solid fa-border-all"></i>
+                <span>All</span>
+            </a>
+
+            <!-- Trending -->
+            <a href="/listings?category=Trending" class="category-item <%= category === 'Trending' ? 'active' : '' %>">
+                <i class="fa-solid fa-fire"></i>
+                <span>Trending</span>
+            </a>
+
+            <!-- Mountain -->
+            <a href="/listings?category=Mountain" class="category-item <%= category === 'Mountain' ? 'active' : '' %>">
+                <i class="fa-solid fa-mountain"></i>
+                <span>Mountain</span>
+            </a>
+
+            <!-- Himalayan -->
+            <a href="/listings?category=Himalayan" class="category-item <%= category === 'Himalayan' ? 'active' : '' %>">
+                <i class="fa-solid fa-snowflake"></i>
+                <span>Himalayan</span>
+            </a>
+
+            <!-- Adventure -->
+            <a href="/listings?category=Adventure" class="category-item <%= category === 'Adventure' ? 'active' : '' %>">
+                <i class="fa-solid fa-person-hiking"></i>
+                <span>Adventure</span>
+            </a>
+
+            <!-- Trekking -->
+            <a href="/listings?category=Trekking" class="category-item <%= category === 'Trekking' ? 'active' : '' %>">
+                <i class="fa-solid fa-shoe-prints"></i>
+                <span>Trekking</span>
+            </a>
+
+            <!-- Wildlife -->
+            <a href="/listings?category=Wildlife" class="category-item <%= category === 'Wildlife' ? 'active' : '' %>">
+                <i class="fa-solid fa-paw"></i>
+                <span>Wildlife</span>
+            </a>
+
+            <!-- Culture -->
+            <a href="/listings?category=Culture" class="category-item <%= category === 'Culture' ? 'active' : '' %>">
+                <i class="fa-solid fa-mask"></i>
+                <span>Culture</span>
+            </a>
+
+            <!-- Heritage -->
+            <a href="/listings?category=Heritage" class="category-item <%= category === 'Heritage' ? 'active' : '' %>">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Heritage</span>
+            </a>
+
+            <!-- Yoga -->
+            <a href="/listings?category=Yoga" class="category-item <%= category === 'Yoga' ? 'active' : '' %>">
+                <i class="fa-solid fa-person-praying"></i>
+                <span>Yoga</span>
+            </a>
+
+            <!-- Agriculture -->
+            <a href="/listings?category=Agriculture" class="category-item <%= category === 'Agriculture' ? 'active' : '' %>">
+                <i class="fa-solid fa-wheat-awn"></i>
+                <span>Agriculture</span>
+            </a>
+
+            <!-- Education -->
+            <a href="/listings?category=Education" class="category-item <%= category === 'Education' ? 'active' : '' %>">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Education</span>
+            </a>
+
+            <!-- Food -->
+            <a href="/listings?category=Food" class="category-item <%= category === 'Food' ? 'active' : '' %>">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Food</span>
+            </a>
+
+            <!-- Kitchen -->
+            <a href="/listings?category=Kitchen" class="category-item <%= category === 'Kitchen' ? 'active' : '' %>">
+                <i class="fa-solid fa-kitchen-set"></i>
+                <span>Kitchen</span>
+            </a>
+
+            <!-- Camping -->
+            <a href="/listings?category=Camping" class="category-item <%= category === 'Camping' ? 'active' : '' %>">
+                <i class="fa-solid fa-campground"></i>
+                <span>Camping</span>
+            </a>
+
+            <!-- Beach -->
+            <a href="/listings?category=Beach" class="category-item <%= category === 'Beach' ? 'active' : '' %>">
+                <i class="fa-solid fa-umbrella-beach"></i>
+                <span>Beach</span>
+            </a>
+
+            <!-- Lake -->
+            <a href="/listings?category=Lake" class="category-item <%= category === 'Lake' ? 'active' : '' %>">
+                <i class="fa-solid fa-water"></i>
+                <span>Lake</span>
+            </a>
+
+            <!-- Desert -->
+            <a href="/listings?category=Desert" class="category-item <%= category === 'Desert' ? 'active' : '' %>">
+                <i class="fa-solid fa-sun"></i>
+                <span>Desert</span>
+            </a>
+
+            <!-- Forest -->
+            <a href="/listings?category=Forest" class="category-item <%= category === 'Forest' ? 'active' : '' %>">
+                <i class="fa-solid fa-tree"></i>
+                <span>Forest</span>
+            </a>
+
+            <!-- River -->
+            <a href="/listings?category=River" class="category-item <%= category === 'River' ? 'active' : '' %>">
+                <i class="fa-solid fa-river"></i>
+                <span>River</span>
+            </a>
+
+            <!-- City -->
+            <a href="/listings?category=City" class="category-item <%= category === 'City' ? 'active' : '' %>">
+                <i class="fa-solid fa-city"></i>
+                <span>City</span>
+            </a>
+
+            <!-- Village -->
+            <a href="/listings?category=Village" class="category-item <%= category === 'Village' ? 'active' : '' %>">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span>Village</span>
+            </a>
+
+            <!-- Farm -->
+            <a href="/listings?category=Farm" class="category-item <%= category === 'Farm' ? 'active' : '' %>">
+                <i class="fa-solid fa-tractor"></i>
+                <span>Farm</span>
+            </a>
+
+            <!-- Garden -->
+            <a href="/listings?category=Garden" class="category-item <%= category === 'Garden' ? 'active' : '' %>">
+                <i class="fa-solid fa-seedling"></i>
+                <span>Garden</span>
+            </a>
+
+            <!-- Spa -->
+            <a href="/listings?category=Spa" class="category-item <%= category === 'Spa' ? 'active' : '' %>">
+                <i class="fa-solid fa-spa"></i>
+                <span>Spa</span>
+            </a>
+
+            <!-- Meditation -->
+            <a href="/listings?category=Meditation" class="category-item <%= category === 'Meditation' ? 'active' : '' %>">
+                <i class="fa-solid fa-om"></i>
+                <span>Meditation</span>
+            </a>
+
+            <!-- Photography -->
+            <a href="/listings?category=Photography" class="category-item <%= category === 'Photography' ? 'active' : '' %>">
+                <i class="fa-solid fa-camera"></i>
+                <span>Photography</span>
+            </a>
+
+            <!-- Art -->
+            <a href="/listings?category=Art" class="category-item <%= category === 'Art' ? 'active' : '' %>">
+                <i class="fa-solid fa-paintbrush"></i>
+                <span>Art</span>
+            </a>
+
+            <!-- Music -->
+            <a href="/listings?category=Music" class="category-item <%= category === 'Music' ? 'active' : '' %>">
+                <i class="fa-solid fa-music"></i>
+                <span>Music</span>
+            </a>
+
+            <!-- Dance -->
+            <a href="/listings?category=Dance" class="category-item <%= category === 'Dance' ? 'active' : '' %>">
+                <i class="fa-solid fa-dharmachakra"></i>
+                <span>Dance</span>
+            </a>
+
+            <!-- Workshop -->
+            <a href="/listings?category=Workshop" class="category-item <%= category === 'Workshop' ? 'active' : '' %>">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <span>Workshop</span>
+            </a>
+
+            <!-- Cooking -->
+            <a href="/listings?category=Cooking" class="category-item <%= category === 'Cooking' ? 'active' : '' %>">
+                <i class="fa-solid fa-egg"></i>
+                <span>Cooking</span>
+            </a>
+
+            <!-- Wine -->
+            <a href="/listings?category=Wine" class="category-item <%= category === 'Wine' ? 'active' : '' %>">
+                <i class="fa-solid fa-wine-glass"></i>
+                <span>Wine</span>
+            </a>
+
+            <!-- Coffee -->
+            <a href="/listings?category=Coffee" class="category-item <%= category === 'Coffee' ? 'active' : '' %>">
+                <i class="fa-solid fa-mug-hot"></i>
+                <span>Coffee</span>
+            </a>
+
+            <!-- Tea -->
+            <a href="/listings?category=Tea" class="category-item <%= category === 'Tea' ? 'active' : '' %>">
+                <i class="fa-solid fa-leaf"></i>
+                <span>Tea</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Page Header with Filters -->
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-light">
+            <% if (search) { %>
+                <i class="fa-regular fa-magnifying-glass me-2" style="color: #000000;"></i> 
+                Search: "<%= search %>"
+            <% } else if (category && category !== 'All') { %>
+                <span style="color: #000000;"><%= category %></span> 
+            <% } else { %>
+                All Experiences
+            <% } %>
+            <span class="fs-6 text-muted ms-2">(<%= typeof allListings !== 'undefined' ? allListings.length : 0 %> listings)</span>
+        </h2>
+        
+        <!-- Difficulty Filter - Only for relevant categories -->
+        <% if(category && ['Trekking', 'Adventure', 'Himalayan', 'Mountain', 'Camping'].includes(category)) { %>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-regular fa-chart-line me-1"></i> Difficulty
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item <%= !difficulty ? 'active' : '' %>" href="?category=<%= category %>">All</a></li>
+                    <li><a class="dropdown-item <%= difficulty === 'Easy' ? 'active' : '' %>" href="?category=<%= category %>&difficulty=Easy">Easy</a></li>
+                    <li><a class="dropdown-item <%= difficulty === 'Moderate' ? 'active' : '' %>" href="?category=<%= category %>&difficulty=Moderate">Moderate</a></li>
+                    <li><a class="dropdown-item <%= difficulty === 'Challenging' ? 'active' : '' %>" href="?category=<%= category %>&difficulty=Challenging">Challenging</a></li>
+                </ul>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Listings Grid -->
+    <% if (typeof allListings !== 'undefined' && allListings.length === 0) { %>
+        <div class="text-center py-5">
+            <i class="fa-regular fa-face-frown" style="font-size: 4rem; color: #ccc;"></i>
+            <h3 class="mt-3 fw-light">No experiences found</h3>
+            <% if (currentUser) { %>
+                <a href="/listings/new" class="btn btn-primary btn-lg mt-3 rounded-pill px-5" style="background-color: #000000;">
+                    <i class="fa-regular fa-plus me-2"></i> Share Your Experience
+                </a>
+            <% } else { %>
+                <a href="/login" class="btn btn-primary btn-lg mt-3 rounded-pill px-5" style="background-color: #000000;">
+                    <i class="fa-regular fa-right-to-bracket me-2"></i> Login to Share
+                </a>
+            <% } %>
+        </div>
+    <% } else { %>
+        <div class="row g-4">
+            <% allListings.forEach(listing => { %>
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 listing-card border-0">
+                        <a href="/listings/<%= listing._id %>" class="text-decoration-none text-dark">
+                            <div class="position-relative">
+                                <% 
+                                    let imageUrl = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400';
+                                    if (listing.images && listing.images.length > 0 && listing.images[0].url) {
+                                        imageUrl = listing.images[0].url;
+                                        if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/uploads')) {
+                                            imageUrl = '/uploads/' + imageUrl;
+                                        }
+                                    }
+                                %>
+                                <img src="<%= imageUrl %>" 
+                                     class="card-img-top rounded-4" 
+                                     alt="<%= listing.title %>" 
+                                     style="height: 250px; object-fit: cover; aspect-ratio: 1/1;"
+                                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400';">
+                                
+                                <button class="btn position-absolute top-0 end-0 m-2 text-white like-btn" onclick="event.preventDefault()">
+                                    <i class="fa-regular fa-heart fa-lg"></i>
+                                </button>
+                                <% if(listing.category) { %>
+                                    <span class="position-absolute bottom-0 start-0 m-2 badge rounded-pill category-badge">
+                                        <%= listing.category %>
+                                    </span>
+                                <% } %>
+                            </div>
+                            <div class="card-body px-0 pb-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title fw-semibold mb-1"><%= listing.location %>, <%= listing.country %></h6>
+                                        <p class="card-text text-muted small text-truncate" style="max-width: 200px;">
+                                            <%= listing.title %>
+                                        </p>
+                                    </div>
+                                    <span class="small"><i class="fa-regular fa-star text-warning me-1"></i> 4.8</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="fw-bold">₹<%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %></span>
+                                    <span class="text-muted small"><%= listing.duration || listing.bedrooms ? listing.bedrooms + (listing.bedrooms > 1 ? ' beds' : ' bed') : '1 night' %></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    <% } %>
+</div>
+
+<%- include('../includes/footer') %>
+
+<style>
+/* Category filters styles */
+.category-filters {
+    position: sticky;
+    top: 80px;
+    z-index: 999;
+    background-color: white;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid #eaeaea;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 2rem;
+}
+
+.category-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.category-filters .d-flex {
+    gap: 3.5rem;
+    min-width: max-content;
+}
+
+.category-item {
+    display: inline-block;
+    padding: 8px 16px;
+    background: transparent;
+    border-radius: 30px;
+    text-decoration: none;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.category-item i {
+    margin-right: 8px;
+}
+
+.category-item:hover, .category-item.active {
+    background-color: #000;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .category-filters {
+        top: 65px;
+        padding: 0.8rem 0;
+    }
+    
+    .category-filters .d-flex {
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .category-filters .d-flex {
+        gap: 2.5rem;
+    }
+}
+
+.listing-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.listing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+.category-badge {
+    background-color: rgba(0,0,0,0.7);
+    font-size: 0.75rem;
+    padding: 5px 10px;
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+</style>

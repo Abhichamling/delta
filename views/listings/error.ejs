@@ -1,0 +1,30 @@
+<% layout("/layouts/boilerplate") %>
+
+<%- include('../includes/navbar') %>
+<%- include('../includes/flash') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-template">
+                <h1 class="display-1 text-danger">
+                    <i class="fa-regular fa-circle-exclamation"></i> <%= err.statusCode || 500 %>
+                </h1>
+                <h2 class="mb-4">Oops! Something went wrong</h2>
+                <div class="error-details mb-4 text-muted">
+                    <%= err.message %>
+                </div>
+                <div class="error-actions">
+                    <a href="/listings" class="btn btn-primary btn-lg rounded-pill px-4">
+                        <i class="fa-regular fa-home me-2"></i>Go to Homepage
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary btn-lg rounded-pill px-4 ms-2">
+                        <i class="fa-regular fa-arrow-left me-2"></i>Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../includes/footer') %>

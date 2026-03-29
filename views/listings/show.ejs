@@ -1,0 +1,542 @@
+<% layout("/layouts/boilerplate") %>
+<%- include('../includes/navbar') %>
+<%- include('../includes/flash') %>
+<!-- Title and Meta Info - Moved to top -->
+<div class="row mb-3">
+    <div class="col-12">
+        <h1 class="fw-light mb-2"><%= listing.title %></h1>
+        
+    </div>
+</div>
+
+<!-- Image Gallery - 1 Big + 2 Small Layout -->
+<div class="row g-2 mb-4">
+    <!-- Big Image - Left Side -->
+    <div class="col-md-8">
+        <div class="main-image-container position-relative h-100">
+            <% 
+            let mainImage = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470';
+            if (listing.images && listing.images.length > 0 && listing.images[0] && listing.images[0].url) {
+                mainImage = listing.images[0].url;
+            }
+            %>
+            <img src="<%= mainImage %>" 
+                 id="mainImage"
+                 class="img-fluid w-100 h-100 rounded-4" 
+                 alt="<%= listing.title %>" 
+                 style="aspect-ratio: 4/3; object-fit: cover; cursor: pointer;"
+                 onclick="openFullscreen(0)"
+                 onerror="this.src='https://images.unsplash.com/photo-1501785888041-af3ef285b470';">
+        </div>
+    </div>
+    
+    <!-- Small Images - Right Side -->
+    <div class="col-md-4">
+        <div class="row g-2 h-100">
+            <!-- Small Image 1 -->
+            <div class="col-12" style="height: 50%;">
+                <% 
+                let smallImage1 = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470';
+                if (listing.images && listing.images.length > 1 && listing.images[1] && listing.images[1].url) {
+                    smallImage1 = listing.images[1].url;
+                } else if (listing.images && listing.images.length > 0) {
+                    smallImage1 = listing.images[0].url;
+                }
+                %>
+                <img src="<%= smallImage1 %>" 
+                     class="img-fluid w-100 h-100 rounded-4" 
+                     style="aspect-ratio: 1/1; object-fit: cover; cursor: pointer;"
+                     onclick="openFullscreen(1)"
+                     onerror="this.src='https://images.unsplash.com/photo-1501785888041-af3ef285b470';">
+            </div>
+            
+            <!-- Small Image 2 with "Show all photos" overlay if more images exist -->
+            <div class="col-12" style="height: 50%;">
+                <% 
+                let smallImage2 = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470';
+                let imageIndex = 2;
+                if (listing.images && listing.images.length > 2 && listing.images[2] && listing.images[2].url) {
+                    smallImage2 = listing.images[2].url;
+                } else if (listing.images && listing.images.length > 0) {
+                    smallImage2 = listing.images[0].url;
+                    imageIndex = 0;
+                }
+                %>
+                <div class="position-relative h-100" onclick="openFullscreen()" style="cursor: pointer;">
+                    <img src="<%= smallImage2 %>" 
+                         class="img-fluid w-100 h-100 rounded-4" 
+                         style="aspect-ratio: 1/1; object-fit: cover; filter: <%= (listing.images && listing.images.length > 3) ? 'brightness(0.7)' : 'none' %>;"
+                         onerror="this.src='https://images.unsplash.com/photo-1501785888041-af3ef285b470';">
+                    
+                    <% if (listing.images && listing.images.length > 3) { %>
+                    <div class="position-absolute top-50 start-50 translate-middle text-white text-center">
+                        <i class="fas fa-images fs-3 mb-2"></i>
+                        <div class="fw-bold">+<%= listing.images.length - 3 %></div>
+                        <small>Show all photos</small>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex flex-wrap gap-3 mb-3 small">
+            <span><i class="fa-solid fa-star text-warning me-1"></i> 4.8 · <%= listing.reviews ? listing.reviews.length : 0 %> reviews</span>
+            <span><i class="fa-solid fa-medal me-1" style="color: #8B5A2B;"></i> Superhost</span>
+            <span><i class="fa-solid fa-location-dot me-1"></i> <%= listing.location %>, <%= listing.country %></span>
+            <span><i class="fa-solid fa-tag me-1"></i> <%= listing.category %></span>
+            <% if(listing.difficulty) { %>
+                <span><i class="fa-solid fa-chart-line me-1"></i> <%= listing.difficulty %></span>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- Image Counter -->
+<div class="text-center mb-3">
+    <span class="badge bg-light text-dark px-3 py-2">
+        <i class="fa-regular fa-images me-2"></i>
+        <%= listing.images ? listing.images.length : 0 %> photos
+    </span>
+</div>
+
+<!-- Fullscreen Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="fa-regular fa-images me-2"></i>
+                    <%= listing.title %> (<span id="currentImageIndex">1</span>/<%= listing.images ? listing.images.length : 0 %>)
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="fullscreenCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        <% if (listing.images && listing.images.length > 0) { %>
+                            <% listing.images.forEach((image, index) => { %>
+                            <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                <img src="<%= image.url %>" 
+                                     class="img-fluid" 
+                                     style="max-height: 70vh; max-width: 100%; object-fit: contain;"
+                                     onerror="this.src='https://images.unsplash.com/photo-1501785888041-af3ef285b470';">
+                            </div>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                    
+                    <button class="carousel-control-prev" type="button" data-bs-target="#fullscreenCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#fullscreenCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row mt-4">
+    <!-- Left Column - Details -->
+    <div class="col-lg-7 col-xl-8">
+        <div class="pe-lg-4">
+            <!-- Host Info -->
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <div>
+                    <h4 class="h5 fw-semibold mb-1">Hosted by <%= listing.owner ? listing.owner.fullname : 'Sirjana' %></h4>
+                    <p class="text-muted small mb-0">
+                        <i class="fa-regular fa-calendar me-1"></i> Joined 2024 · 
+                        <i class="fa-regular fa-user me-1 ms-2"></i> <%= listing.maxGuests || 2 %> guests max
+                    </p>
+                </div>
+                <img src="<%= listing.owner ? listing.owner.profileImage : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' %>" 
+                     class="rounded-circle" style="width: 56px; height: 56px; object-fit: cover;"
+                     onerror="this.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'">
+            </div>
+            
+            <!-- Highlights -->
+            <div class="row g-3 mb-4 pb-3 border-bottom">
+                <div class="col-6 col-md-3">
+                    <div class="text-center">
+                        <i class="fa-regular fa-clock fs-4 mb-2" style="color: #8B5A2B;"></i>
+                        <p class="small fw-semibold mb-0">Duration</p>
+                        <p class="small text-muted"><%= listing.duration || 'Flexible' %></p>
+                    </div>
+                </div>
+                
+                    <!-- <div class="text-center">
+                        <i class="fa-regular fa-people-group fs-4 mb-2" style="color: #8B5A2B;"></i>
+                        <p class="small fw-semibold mb-0">Group Size</p>
+                        <p class="small text-muted">Up to <%= listing.maxGuests || 2 %> guests</p>
+                    </div> -->
+                
+                <div class="col-6 col-md-3">
+                    <div class="text-center">
+                        <i class="fa-regular fa-calendar-check fs-4 mb-2" style="color: #8B5A2B;"></i>
+                        <p class="small fw-semibold mb-0">Best Season</p>
+                        <p class="small text-muted"><%= listing.bestSeason || 'Year round' %></p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="text-center">
+                        <i class="fa-regular fa-flag fs-4 mb-2" style="color: #8B5A2B;"></i>
+                        <p class="small fw-semibold mb-0">Difficulty</p>
+                        <p class="small text-muted"><%= listing.difficulty || 'Easy' %></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="mb-4 pb-3 border-bottom">
+                <h5 class="fw-semibold mb-3">About this experience</h5>
+                <p class="text-muted" style="line-height: 1.8;"><%= listing.description %></p>
+            </div>
+            
+            <!-- What's Included -->
+            <div class="mb-4 pb-3 border-bottom">
+                <h5 class="fw-semibold mb-3">What's included</h5>
+                <div class="row">
+                    <% if(listing.amenities && listing.amenities.length > 0) { %>
+                        <% listing.amenities.forEach(item => { %>
+                            <div class="col-6 mb-2">
+                                <i class="fa-regular fa-circle-check me-2" style="color: #8B5A2B;"></i>
+                                <span class="small"><%= item %></span>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="col-12">
+                            <p class="text-muted small">No amenities listed</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- Activities -->
+            <% if(listing.experiences && listing.experiences.length > 0) { %>
+                <div class="mb-4 pb-3 border-bottom">
+                    <h5 class="fw-semibold mb-3">Activities</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <% listing.experiences.forEach(activity => { %>
+                            <span class="badge rounded-pill bg-light text-dark p-2 px-3">
+                                <i class="fa-regular fa-star me-1" style="color: #8B5A2B;"></i>
+                                <%= activity %>
+                            </span>
+                        <% }) %>
+                    </div>
+                </div>
+            <% } %>
+            
+            <!-- MAP DISPLAYED HERE - AFTER ACTIVITIES -->
+            <div class="mb-4">
+                <h5 class="fw-semibold mb-3">Location</h5>
+                <p class="mb-3"><i class="fas fa-map-pin me-2" style="color: #8B5A2B;"></i> <%= listing.location %>, <%= listing.country %></p>
+                
+                <!-- Map Component -->
+                <% 
+                const coordinates = {
+                    lon: listing.longitude || 85.3240,
+                    lat: listing.latitude || 27.7172
+                };
+                %>
+                
+                <%- include("../includes/map", { 
+                    id: listing._id,
+                    lon: coordinates.lon,
+                    lat: coordinates.lat,
+                    name: listing.location + ', ' + listing.country 
+                }) %>
+            </div>
+            
+            <!-- Reviews Section -->
+            <div class="mb-4">
+                <h4 class="h5 fw-semibold mb-3">
+                    <i class="fa-solid fa-star me-2" style="color: #FFD700;"></i>
+                    <%= listing.reviews ? listing.reviews.length : 0 %> Reviews
+                </h4>
+                
+                <% if (currentUser) { %>
+                    <form action="/listings/<%= listing._id %>/reviews" method="POST" class="mb-4 bg-light p-4 rounded-4">
+                        <h6 class="fw-semibold mb-3">Write a review</h6>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Rating</label>
+                            <select name="review[rating]" class="form-select form-select-sm rounded-pill" required>
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="3">3 - Good</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="1">1 - Poor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Your experience</label>
+                            <textarea name="review[comment]" class="form-control rounded-4" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn text-white rounded-pill px-4" style="background-color: #8B5A2B;">
+                            Submit Review
+                        </button>
+                    </form>
+                <% } %>
+                
+                <% if (listing.reviews && listing.reviews.length > 0) { %>
+                    <div class="row g-3">
+                        <% listing.reviews.slice(0, 4).forEach(review => { %>
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light rounded-4">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="card-title fw-semibold mb-0">
+                                                <i class="fa-regular fa-circle-user me-2" style="color: #8B5A2B;"></i>
+                                                <%= review.author ? review.author.username : 'Traveler' %>
+                                            </h6>
+                                            <div class="text-warning small">
+                                                <% for(let i = 1; i <= 5; i++) { %>
+                                                    <i class="<%= i <= review.rating ? 'fa-solid' : 'fa-regular' %> fa-star"></i>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <p class="card-text small text-muted"><%= review.comment %></p>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <small class="text-muted"><%= new Date(review.createdAt).toLocaleDateString() %></small>
+                                            <% if (currentUser && review.author && currentUser._id.equals(review.author._id)) { %>
+                                                <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
+                                                    <button type="submit" class="btn btn-sm text-danger p-0">
+                                                        <i class="fa-regular fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                    <% if(listing.reviews.length > 4) { %>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-link text-decoration-none" style="color: #8B5A2B;">
+                                Show all <%= listing.reviews.length %> reviews
+                            </button>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column - Booking Card -->
+    <div class="col-lg-5 col-xl-4">
+        <div class="card sticky-top border-0 shadow-lg rounded-4 p-4" style="top: 100px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="h4 fw-bold">₹ & $<%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %></span>
+                    <span class="text-muted">/ night</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-star text-warning me-1"></i>
+                    <span class="fw-semibold">4.8</span>
+                    <span class="text-muted ms-1">· <%= listing.reviews ? listing.reviews.length : 0 %></span>
+                </div>
+            </div>
+            
+            <!-- Booking Form with Date Inputs -->
+            <div class="border rounded-4 overflow-hidden mb-3">
+                <div class="row g-0">
+                    <div class="col-6 border-end">
+                        <div class="p-3">
+                            <label class="text-uppercase small fw-semibold text-muted mb-1">CHECK-IN</label>
+                            <input type="date" class="form-control border-0 p-0" id="checkIn" 
+                                   onchange="calculateTotal()" required>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3">
+                            <label class="text-uppercase small fw-semibold text-muted mb-1">CHECK-OUT</label>
+                            <input type="date" class="form-control border-0 p-0" id="checkOut" 
+                                   onchange="calculateTotal()" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-top p-3">
+                    <label class="text-uppercase small fw-semibold text-muted mb-1">GUESTS</label>
+                    <select class="form-select border-0 p-0" id="guests">
+                        <% for(let i = 1; i <= (listing.maxGuests || 8); i++) { %>
+                            <option value="<%= i %>"><%= i %> guest<%= i > 1 ? 's' : '' %></option>
+                        <% } %>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn text-white w-100 py-3 rounded-pill mb-3 fw-semibold" 
+                    style="background-color: #8B5A2B;"
+                    onclick="handleBooking()">
+                <i class="fa-regular fa-calendar-check me-2"></i> Check Availability
+            </button>
+            
+            <p class="text-center text-muted small mb-3">You won't be charged yet</p>
+            
+            <!-- Dynamic Price Breakdown -->
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-between mb-2 small">
+                    <span>₹<%= listing.price || 0 %> x <span id="nightCount">5</span> nights</span>
+                    <span id="nightlyTotal">₹<%= (listing.price || 0) * 5 %></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 small">
+                    <span>VAT</span>
+                    <span id="cleaningFee">₹&$</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 small">
+                    <span>TAX</span>
+                    <span id="serviceFee">₹&$</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold pt-3 border-top">
+                    <span>Total</span>
+                    <span id="totalPrice">₹<%= (listing.price || 0) * 5 + 800 %></span>
+                </div>
+            </div>
+            
+            <% if (currentUser && listing.owner && currentUser._id.equals(listing.owner._id)) { %>
+                <hr class="my-3">
+                <div class="d-grid gap-2">
+                    <a href="/listings/<%= listing._id %>/edit" class="btn btn-warning rounded-pill">
+                        <i class="fa-regular fa-pen-to-square me-2"></i> Edit Experience
+                    </a>
+                    <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST" 
+                          onsubmit="return confirm('Are you sure you want to delete this listing?');">
+                        <button type="submit" class="btn btn-outline-danger rounded-pill w-100">
+                            <i class="fa-regular fa-trash-can me-2"></i> Delete Experience
+                        </button>
+                    </form>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeMainImage(imageUrl, index) {
+    document.getElementById('mainImage').src = imageUrl;
+    
+    // Also update the modal to show the correct image
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        const carousel = bootstrap.Carousel.getInstance(document.getElementById('fullscreenCarousel'));
+        if (carousel) {
+            carousel.to(index);
+        }
+    }
+}
+
+function openFullscreen(index = 0) {
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    
+    // Set the carousel to the correct image
+    const carousel = bootstrap.Carousel.getInstance(document.getElementById('fullscreenCarousel'));
+    if (carousel) {
+        carousel.to(index);
+    }
+    document.getElementById('currentImageIndex').textContent = (index + 1) + '/' + <%= listing.images ? listing.images.length : 0 %>;
+    
+    modal.show();
+}
+
+document.getElementById('fullscreenCarousel')?.addEventListener('slide.bs.carousel', function(e) {
+    document.getElementById('currentImageIndex').textContent = (e.to + 1) + '/' + <%= listing.images ? listing.images.length : 0 %>;
+});
+
+// WORKING CALCULATOR FUNCTION ==========
+function calculateTotal() {
+    const pricePerNight = <%= listing.price || 0 %>;
+    const cleaningFee = 500;
+    const serviceFee = 300;
+    
+    const checkIn = document.getElementById('checkIn').value;
+    const checkOut = document.getElementById('checkOut').value;
+    
+    if (checkIn && checkOut) {
+        const start = new Date(checkIn);
+        const end = new Date(checkOut);
+        const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        
+        if (nights > 0) {
+            const nightlyTotal = pricePerNight * nights;
+            const total = nightlyTotal + cleaningFee + serviceFee;
+            
+            // Update the display
+            document.getElementById('nightCount').textContent = nights;
+            document.getElementById('nightlyTotal').textContent = '₹ & $' + nightlyTotal.toLocaleString('en-IN');
+            document.getElementById('totalPrice').textContent = '₹ & $' + total.toLocaleString('en-IN');
+        } else {
+            alert('Check-out date must be after check-in date');
+        }
+    }
+}
+
+function handleBooking() {
+    const checkIn = document.getElementById('checkIn').value;
+    const checkOut = document.getElementById('checkOut').value;
+    const guests = document.getElementById('guests').value;
+    
+    if (!checkIn || !checkOut) {
+        alert('Please select check-in and check-out dates');
+        return;
+    }
+    
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const total = document.getElementById('totalPrice').textContent;
+    
+    alert(`Booking Summary:
+    Check-in: ${start.toLocaleDateString()}
+    Check-out: ${end.toLocaleDateString()}
+    Nights: ${nights}
+    Guests: ${guests}
+    Total: ${total}
+    
+    Booking feature coming soon!`);
+}
+
+// Set minimum dates on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const checkIn = document.getElementById('checkIn');
+    const checkOut = document.getElementById('checkOut');
+    
+    if (checkIn) {
+        checkIn.min = today;
+        checkIn.value = today;
+        
+        // Set tomorrow as default checkout
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        checkOut.value = tomorrow.toISOString().split('T')[0];
+        checkOut.min = tomorrow.toISOString().split('T')[0];
+        
+        // Update checkout min when checkin changes
+        checkIn.addEventListener('change', function() {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOut.min = nextDay.toISOString().split('T')[0];
+            
+            // If current checkout is before new min, update it
+            if (new Date(checkOut.value) <= new Date(this.value)) {
+                checkOut.value = nextDay.toISOString().split('T')[0];
+            }
+            
+            calculateTotal();
+        });
+        
+        checkOut.addEventListener('change', calculateTotal);
+        
+        // Initial calculation
+        calculateTotal();
+    }
+});
+</script>

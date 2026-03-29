@@ -1,0 +1,506 @@
+<% layout("/layouts/boilerplate") %>
+<%- include('../includes/navbar') %>
+<%- include('../includes/flash') %>
+
+<div class="edit-form-container">
+    <div class="edit-card">
+        <div class="edit-card-header">
+            <h3>
+                <i class="fas fa-edit"></i>
+                Edit Listing
+            </h3>
+        </div>
+        
+        <div class="edit-card-body">
+            <form action="/listings/<%= listing._id %>?_method=PUT" method="post" enctype="multipart/form-data" id="editListingForm">
+                
+                <!-- Title -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Title <span class="required">*</span>
+                    </label>
+                    <input type="text" name="listing[title]" class="form-control"
+                           placeholder="Enter title" required value="<%= listing.title %>">
+                </div>
+                
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Description <span class="required">*</span>
+                    </label>
+                    <textarea name="listing[description]" class="form-control" rows="5"
+                              placeholder="Enter description" required><%= listing.description %></textarea>
+                </div>
+                
+                <!-- Country and Price Row -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Country <span class="required">*</span>
+                        </label>
+                        <input type="text" name="listing[country]" class="form-control"
+                               placeholder="Enter country" required value="<%= listing.country %>">
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Price (₹ / $) <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹/$</span>
+                            <input type="number" name="listing[price]" class="form-control"
+                                   required value="<%= listing.price %>" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Location <span class="required">*</span>
+                    </label>
+                    <input type="text" name="listing[location]" class="form-control"
+                           placeholder="Enter location" required value="<%= listing.location %>">
+                </div>
+                
+                <!-- Google Maps Link -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        Google Maps Location Link
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-link"></i>
+                        </span>
+                        <input type="url" name="listing[googleMapsUrl]" class="form-control" 
+                               placeholder="https://maps.app.goo.gl/..." 
+                               value="<%= listing.googleMapsUrl || '' %>">
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Paste a Google Maps share link to show your location
+                    </small>
+                </div>
+                
+                <!-- Categories -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Categories <span class="required">*</span>
+                        <span class="text-muted small">(Select up to 10)</span>
+                    </label>
+                    
+                    <div class="category-grid">
+                        <% const categories = [
+                            'All', 'Trending', 'Mountain', 'Himalayan', 'Adventure', 'Trekking',
+                            'Wildlife', 'Culture', 'Heritage', 'Yoga', 'Agriculture', 'Education',
+                            'Food', 'Kitchen', 'Camping', 'Beach', 'Lake', 'Desert', 'Forest',
+                            'River', 'City', 'Village', 'Farm', 'Garden', 'Spa', 'Meditation',
+                            'Photography', 'Art', 'Music', 'Dance', 'Workshop', 'Cooking',
+                            'Wine', 'Coffee', 'Tea'
+                        ]; %>
+                        
+                        <% categories.forEach(category => { %>
+                            <label class="category-checkbox">
+                                <input type="checkbox" name="listing[categories][]" value="<%= category %>" class="category-input" 
+                                       <%= listing.categories && listing.categories.includes(category) ? 'checked' : '' %>>
+                                <span class="category-item"><%= category %></span>
+                            </label>
+                        <% }); %>
+                    </div>
+                    
+                    <div id="category-error" class="text-danger small mt-2" style="display: none;">
+                        <i class="fas fa-exclamation-circle me-1"></i> You can only select up to 10 categories
+                    </div>
+                    <div id="category-count" class="text-muted small mt-1">
+                        <i class="fas fa-check-circle me-1"></i> Selected: <span id="selected-count"><%= listing.categories ? listing.categories.length : 0 %></span> / 10
+                    </div>
+                </div>
+                
+                <!-- Current Images -->
+                <div class="current-images-section">
+                    <h5>
+                        <i class="fas fa-images me-2"></i>
+                        Current Images
+                    </h5>
+                    <div class="current-images-grid">
+                        <% if(listing.images && listing.images.length > 0) { %>
+                            <% listing.images.forEach((image, index) => { %>
+                                <div class="current-image">
+                                    <img src="<%= image.url %>" alt="Listing image <%= index + 1 %>">
+                                    <span class="image-number"><%= index + 1 %></span>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="col-12">
+                                <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" 
+                                     alt="Default image" class="default-image">
+                            </div>
+                        <% } %>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Current images will be replaced if you upload new ones
+                    </p>
+                </div>
+                
+                <!-- Upload New Images -->
+                <div class="photo-upload-section">
+                    <h5>
+                        <i class="fas fa-camera"></i>
+                        Add New Photos
+                        <span class="text-muted small fw-normal">(Up to 30 images, Max 5MB each)</span>
+                    </h5>
+                    
+                    <div class="upload-area">
+                        <input type="file" name="listing[images]" class="form-control" 
+                               multiple accept="image/*" id="imageUpload">
+                        <div class="upload-help-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            You can select up to 30 images at once. Leave empty to keep current images.
+                        </div>
+                    </div>
+                    
+                    <div id="fileSizeWarning" class="file-size-warning" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span></span>
+                    </div>
+                    
+                    <div id="compressionStatus" class="compressing-message" style="display: none;">
+                        <i class="fas fa-spinner loading-spinner"></i>
+                        <span>Compressing large images...</span>
+                    </div>
+                    
+                    <!-- Preview Grid -->
+                    <div id="uploadPreview" class="preview-grid"></div>
+                    
+                    <!-- Image Counter -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span id="imageCount" class="image-counter-badge">
+                            <i class="fas fa-images me-2"></i>
+                            <span>0 / 30 new images selected</span>
+                        </span>
+                    </div>
+                    <div id="uploadCount" class="text-muted small text-center mt-2"></div>
+                </div>
+                
+                <!-- Additional Details Row -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Amenities (comma separated)</label>
+                        <input type="text" class="form-control" id="amenities" name="listing[amenities]" 
+                               value="<%= listing.amenities ? listing.amenities.join(', ') : '' %>"
+                               placeholder="e.g., WiFi, Pool, Kitchen">
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Experiences (comma separated)</label>
+                        <input type="text" class="form-control" id="experiences" name="listing[experiences]" 
+                               value="<%= listing.experiences ? listing.experiences.join(', ') : '' %>"
+                               placeholder="e.g., Trekking, Yoga, Cooking">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Best Season</label>
+                        <input type="text" class="form-control" id="bestSeason" name="listing[bestSeason]" 
+                               value="<%= listing.bestSeason || '' %>"
+                               placeholder="e.g., October to March">
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Duration</label>
+                        <input type="text" class="form-control" id="duration" name="listing[duration]" 
+                               value="<%= listing.duration || '' %>"
+                               placeholder="e.g., 3 Days / 2 Nights">
+                    </div>
+                </div>
+                
+                <!-- Difficulty -->
+                <div class="form-group">
+                    <label class="form-label">Difficulty</label>
+                    <select class="form-select" id="difficulty" name="listing[difficulty]">
+                        <option value="Easy" <%= listing.difficulty === 'Easy' ? 'selected' : '' %>>Easy</option>
+                        <option value="Moderate" <%= listing.difficulty === 'Moderate' ? 'selected' : '' %>>Moderate</option>
+                        <option value="Challenging" <%= listing.difficulty === 'Challenging' ? 'selected' : '' %>>Challenging</option>
+                    </select>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="/listings/<%= listing._id %>" class="btn-cancel">
+                        <i class="fas fa-times me-2"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Confirm Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include CSS -->
+<link rel="stylesheet" href="/css/listing-edit.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ========== CONSTANTS ==========
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
+    const MAX_IMAGE_DIMENSION = 1920;
+    
+    // ========== CATEGORY SELECTION ==========
+    const categoryInputs = document.querySelectorAll('.category-input');
+    const categoryError = document.getElementById('category-error');
+    const categoryCount = document.getElementById('category-count');
+    const selectedCountSpan = document.getElementById('selected-count');
+    
+    function updateCategoryCount() {
+        const checkedCount = document.querySelectorAll('.category-input:checked').length;
+        if (selectedCountSpan) selectedCountSpan.textContent = checkedCount;
+        
+        if (checkedCount >= 10) {
+            if (categoryCount) categoryCount.style.color = '#dc3545';
+            categoryInputs.forEach(input => {
+                if (!input.checked) input.disabled = true;
+            });
+        } else {
+            if (categoryCount) categoryCount.style.color = '#6c757d';
+            categoryInputs.forEach(input => input.disabled = false);
+        }
+    }
+    
+    categoryInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const checkedCount = document.querySelectorAll('.category-input:checked').length;
+            
+            if (checkedCount > 10) {
+                this.checked = false;
+                if (categoryError) categoryError.style.display = 'block';
+            } else {
+                if (categoryError) categoryError.style.display = 'none';
+            }
+            updateCategoryCount();
+        });
+    });
+    updateCategoryCount();
+    
+    // ========== IMAGE COMPRESSION ==========
+    async function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    let width = img.width, height = img.height;
+                    
+                    if (width > height && width > MAX_IMAGE_DIMENSION) {
+                        height = Math.round(height * MAX_IMAGE_DIMENSION / width);
+                        width = MAX_IMAGE_DIMENSION;
+                    } else if (height > MAX_IMAGE_DIMENSION) {
+                        width = Math.round(width * MAX_IMAGE_DIMENSION / height);
+                        height = MAX_IMAGE_DIMENSION;
+                    }
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    }, 'image/jpeg', 0.8);
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    }
+    
+    // ========== IMAGE UPLOAD HANDLING ==========
+    const imageUpload = document.getElementById('imageUpload');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const imageCountSpan = document.getElementById('imageCount');
+    const uploadCount = document.getElementById('uploadCount');
+    const fileSizeWarning = document.getElementById('fileSizeWarning');
+    const compressionStatus = document.getElementById('compressionStatus');
+    let selectedFiles = [];
+    let isCompressing = false;
+    
+    function updateImageCount(count) {
+        if (!imageCountSpan) return;
+        const textSpan = imageCountSpan.querySelector('span');
+        if (textSpan) {
+            textSpan.textContent = `${count} / 30 new images selected`;
+        }
+        
+        if (count === 0) {
+            imageCountSpan.className = 'image-counter-badge';
+        } else if (count > 0 && count < 30) {
+            imageCountSpan.className = 'image-counter-badge';
+        }
+    }
+    
+    function displayUploadPreviews(files) {
+        if (!uploadPreview) return;
+        uploadPreview.innerHTML = '';
+        
+        if (files.length === 0) {
+            if (uploadCount) uploadCount.textContent = '';
+            return;
+        }
+        
+        files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'preview-image';
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview ${index + 1}">
+                    <button type="button" class="remove-btn" onclick="removeUploadImage(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <span class="file-size-badge">${(file.size / 1024).toFixed(0)}KB</span>
+                `;
+                uploadPreview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        const totalSize = files.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024);
+        if (uploadCount) {
+            uploadCount.textContent = `${files.length} image(s) selected (Total: ${totalSize.toFixed(2)}MB)`;
+        }
+    }
+    
+    window.removeUploadImage = function(index) {
+        selectedFiles.splice(index, 1);
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        if (imageUpload) imageUpload.files = dt.files;
+        displayUploadPreviews(selectedFiles);
+        updateImageCount(selectedFiles.length);
+    };
+    
+    if (imageUpload) {
+        imageUpload.addEventListener('change', async function(e) {
+            if (isCompressing) {
+                alert('Please wait for current compression to finish');
+                return;
+            }
+            
+            const files = Array.from(e.target.files);
+            if (files.length > 30) {
+                alert('You can only upload up to 30 images');
+                imageUpload.value = '';
+                return;
+            }
+            
+            const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
+            if (oversizedFiles.length > 0) {
+                if (fileSizeWarning) {
+                    fileSizeWarning.style.display = 'block';
+                    fileSizeWarning.querySelector('span').textContent = `${oversizedFiles.length} file(s) are too large. Compressing...`;
+                }
+                if (compressionStatus) compressionStatus.style.display = 'block';
+                isCompressing = true;
+                
+                try {
+                    const compressedFiles = await Promise.all(files.map(async file => {
+                        return file.size > MAX_FILE_SIZE ? await compressImage(file) : file;
+                    }));
+                    
+                    const dt = new DataTransfer();
+                    compressedFiles.forEach(file => dt.items.add(file));
+                    imageUpload.files = dt.files;
+                    selectedFiles = compressedFiles;
+                    
+                    if (compressionStatus) compressionStatus.style.display = 'none';
+                    if (fileSizeWarning) fileSizeWarning.style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Compression error:', error);
+                    selectedFiles = files;
+                } finally {
+                    isCompressing = false;
+                }
+            } else {
+                if (fileSizeWarning) fileSizeWarning.style.display = 'none';
+                selectedFiles = files;
+            }
+            
+            updateImageCount(selectedFiles.length);
+            displayUploadPreviews(selectedFiles);
+        });
+    }
+    
+    // ========== FORM SUBMIT ==========
+    const form = document.getElementById('editListingForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const checkedCategories = document.querySelectorAll('.category-input:checked').length;
+            if (checkedCategories === 0) {
+                e.preventDefault();
+                alert('Please select at least 1 category');
+                return false;
+            }
+            
+            if (checkedCategories > 10) {
+                e.preventDefault();
+                alert('You can only select up to 10 categories');
+                return false;
+            }
+            
+            // Show loading state
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner loading-spinner"></i> Saving Changes...';
+            }
+            
+            // Process amenities and experiences
+            const amenities = document.getElementById('amenities');
+            const experiences = document.getElementById('experiences');
+            
+            const existingAmenities = document.querySelectorAll('input[name^="listing[amenities]"]');
+            const existingExperiences = document.querySelectorAll('input[name^="listing[experiences]"]');
+            
+            existingAmenities.forEach(el => el.remove());
+            existingExperiences.forEach(el => el.remove());
+            
+            if (amenities && amenities.value && amenities.value.trim() !== '') {
+                const items = amenities.value.split(',').map(item => item.trim()).filter(item => item !== '');
+                items.forEach((item, index) => {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = `listing[amenities][${index}]`;
+                    hidden.value = item;
+                    form.appendChild(hidden);
+                });
+            }
+            
+            if (experiences && experiences.value && experiences.value.trim() !== '') {
+                const items = experiences.value.split(',').map(item => item.trim()).filter(item => item !== '');
+                items.forEach((item, index) => {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = `listing[experiences][${index}]`;
+                    hidden.value = item;
+                    form.appendChild(hidden);
+                });
+            }
+            
+            return true;
+        });
+    }
+});
+</script>

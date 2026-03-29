@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Your existing head content -->
+</head>
+<body>
+    <!-- Include navbar -->
+    <%- include('../includes/navbar') %>
+    
+    <!-- Your main content -->
+    <main>
+        <%- body %>
+    </main>
+    
+    <!-- Include one-time notice (only on listings page) -->
+    <% if (currentPath && currentPath.includes('/listings')) { %>
+        <%- include('../partials/oneTimeNotice') %>
+    <% } %>
+    
+    <!-- Include footer -->
+    <%- include('../includes/footer') %>
+    
+    <script>
+        // Pass current path to EJS
+        window.currentPath = '<%= currentPath %>';
+    </script>
+</body>
+</html>

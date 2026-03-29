@@ -1,0 +1,62 @@
+<% layout("/layouts/boilerplate") %>
+
+<%- include('../includes/navbar') %>
+<%- include('../includes/flash') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm rounded-4 border-0">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4 fw-light">
+                        <i class="" style="color: #1A385A;"></i>
+                        Create Account
+                    </h2>
+                    
+                    <form action="/signup" method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold" style="color: #1A385A;">Username</label>
+                            <input type="text" name="username" id="username" class="form-control rounded-3" 
+                                   required placeholder="Choose a username" style="border-color: #E0E4E8;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold" style="color: #1A385A;">Email</label>
+                            <input type="email" name="email" id="email" class="form-control rounded-3" 
+                                   required placeholder="Enter your email" style="border-color: #E0E4E8;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fullname" class="form-label fw-semibold" style="color: #1A385A;">Full Name (Optional)</label>
+                            <input type="text" name="fullname" id="fullname" class="form-control rounded-3" 
+                                   placeholder="Enter your full name" style="border-color: #E0E4E8;">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold" style="color: #1A385A;">Password</label>
+                            <input type="password" name="password" id="password" class="form-control rounded-3" 
+                                   required placeholder="Create a password" style="border-color: #E0E4E8;">
+                            <small class="text-muted">Password must be at least 6 characters</small>
+                        </div>
+                        
+                        <button type="submit" class="btn text-white w-100 py-2 rounded-pill fw-semibold mb-3"
+                                style="background: #1A385A; border: none;">
+                            <i class=""></i> Sign Up
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <p class="text-center text-muted mb-0">
+                        Already have an account? 
+                        <a href="/login" class="text-decoration-none fw-semibold" style="color: #D9B648;">
+                            Login here
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../includes/footer') %>

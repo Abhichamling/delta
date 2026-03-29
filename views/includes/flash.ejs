@@ -1,0 +1,13 @@
+<% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show rounded-pill" role="alert" style="background-color: #d4edda; color: #155724; border: none;">
+        <i class="fa-solid fa-check-circle me-2"></i> <%= success %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show rounded-pill" role="alert" style="background-color: #f8d7da; color: #721c24; border: none;">
+        <i class="fa-solid fa-exclamation-triangle me-2"></i> <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
