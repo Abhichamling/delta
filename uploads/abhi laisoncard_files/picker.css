@@ -1,0 +1,128 @@
+.nepDatePicker {
+  position: relative;
+  cursor: pointer;
+}
+.nepDatePicker.form-control {
+  border-radius: 5px !important;
+}
+#divNepDatePicker select {
+  -webkit-appearance: none;
+  background: url(/assets/images/downarrow.svg) no-repeat right center;
+  padding: 8px 5px;
+  border: 1px solid #ebe8e8;
+  flex: 1;
+  outline: none;
+}
+
+#next,
+#previous {
+  position: relative;
+  padding: 0;
+  outline: none;
+  border: 1px solid #ebe8e8
+}
+#tblNepCal {
+  width: 100%;
+  border-radius: 0 0 5px 5px;
+  overflow: hidden;
+}
+
+#next:before,
+#previous:before {
+  content: "";
+  position: relative;
+  height: 100%;
+  width: 32px;
+  display: block;
+}
+
+#previous:before {
+  background: url(/assets/images/leftarrow.svg) no-repeat center center
+}
+
+#next:before {
+  background: url(/assets/images/rightarrow.svg) no-repeat center center
+}
+
+.nepCalendar-container {
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, .19), 0 6px 6px rgba(0, 0, 0, .23);
+  display: inline-block;
+  font-family: sans-serif;
+  height: auto;
+  margin: 0;
+  position: relative;
+  width: 100%
+}
+
+#divNepDatePicker {
+  position: absolute;
+  z-index: 9;
+  left: 0;
+  right: 0;
+  top: 100%;
+  min-width: 240px;
+  max-width: 280px;
+}
+
+.nepInactiveDate {
+  opacity: .5;
+  cursor: not-allowed
+}
+
+.nepDatePickerCalendarTbody {
+  text-align: center;
+}
+thead.nepDatePickerCalendarTbody td {
+  padding: 5px;
+  border-bottom: 1px solid #ebe8e8;
+  border-right: 1px solid #ebe8e8;
+  background: lavenderblush;
+}
+thead.nepDatePickerCalendarTbody td:last-child {
+  border-right: none;
+}
+
+.nepDay {
+  text-align: center;
+  border: 1px solid #dcdcdc;
+  width: 36px;
+  height: 36px
+}
+
+.dpEmptyTd {
+  width: 36px;
+  height: 36px
+}
+
+.nepDay:not(.nepHoliday):not(.nepInactiveDate):not(.nepHolidayToday):hover {
+  background: #286090;
+  cursor: pointer;
+  color: #fff;
+}
+
+.nepCalendarSelector {
+  background: #f7f6f3;
+  display: flex;
+  flex-wrap: wrap;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+}
+
+.nepToday {
+  border: 1px solid;
+  background: #606090;
+  color: #fff
+}
+
+.nepHoliday {
+  color: red;
+  cursor: not-allowed
+}
+
+.nepHolidayToday {
+  color: #fff;
+  background: red;
+  cursor: not-allowed
+}

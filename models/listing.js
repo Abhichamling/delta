@@ -1,14 +1,16 @@
 const mongoose = require('mongoose');
 
-// All available categories
+// All available categories combined from both versions
 const allCategories = [
-  "Mountain", "Himalayan", "Adventure", "Trekking", "Camping",
-  "Wildlife", "Culture", "Heritage", "Yoga", "Meditation",
-  "Agriculture", "Education", "Food", "Kitchen", "Cooking",
-  "Beach", "Lake", "Desert", "Forest", "River",
-  "City", "Village", "Farm", "Garden", "Spa",
-  "Photography", "Art", "Music", "Dance", "Workshop",
-  "Wine", "Coffee", "Tea", "All", "Trending"
+  // Original categories
+  "Wildlife", "Culture", "Heritage", "Trekking", "Adventure", 
+  "Himalayan", "Agriculture", "Yoga", "Food", "Beach", "Lake", 
+  "Desert", "Forest", "River", "City", "Village", "Farm", "Garden", 
+  "Spa", "Meditation", "Photography", "Art", "Music", "Dance", 
+  "Workshop", "Cooking", "Wine", "Coffee", "Tea", "Camping",
+  
+  // Additional categories from the new version
+  "All", "Trending", "Mountain", "Education", "Kitchen"
 ];
 
 const listingSchema = new mongoose.Schema({
@@ -37,26 +39,31 @@ const listingSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Google Maps Link - NEW FIELD ADDED HERE
   googleMapsUrl: {
     type: String,
     default: ''
   },
+  // Coordinates for map
   longitude: {
     type: Number,
-    default: 85.3240
+    default: 85.3240 // Default to Kathmandu
   },
   latitude: {
     type: Number,
-    default: 27.7172
+    default: 27.7172 // Default to Kathmandu
   },
+  // Multiple categories (for new listings)
   categories: [{
     type: String,
     enum: allCategories
   }],
+  // Single category (for backward compatibility)
   category: {
     type: String,
     enum: allCategories
   },
+  // Optional fields
   bedrooms: {
     type: Number,
     default: 1
@@ -78,6 +85,8 @@ const listingSchema = new mongoose.Schema({
     default: "Easy"
   },
   duration: String,
+  included: [String],
+  notIncluded: [String],
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -89,7 +98,7 @@ const listingSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-// Pre-save middleware
+// Pre-save middleware to ensure category is set from categories
 listingSchema.pre('save', function(next) {
   if (this.categories && this.categories.length > 0 && !this.category) {
     this.category = this.categories[0];

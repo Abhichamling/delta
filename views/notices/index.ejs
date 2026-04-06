@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>NoticeBoard - Latest Updates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* Mobile First NoticeBoard */
+        .noticeboard-main {
+            padding: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .noticeboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .noticeboard-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .noticeboard-header p {
+            opacity: 0.95;
+            font-size: 16px;
+        }
+
+        /* Notice Cards Grid */
+        .notices-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .notice-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .notice-card:active {
+            transform: scale(0.99);
+        }
+
+        /* Notice Image - Mobile Optimized */
+        .notice-image-wrapper {
+            position: relative;
+            width: 100%;
+            background: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .notice-image {
+            width: 100%;
+            height: auto;
+            min-height: 200px;
+            max-height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .notice-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        .notice-content {
+            padding: 20px;
+        }
+
+        .notice-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .notice-description {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .notice-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .notice-author {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .notice-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Touch-friendly Button */
+        .view-details-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .view-details-btn:active {
+            background: #5a67d8;
+            transform: scale(0.98);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        /* Loading State */
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tablet & Desktop */
+        @media (min-width: 768px) {
+            .noticeboard-main {
+                padding: 24px;
+            }
+            
+            .notices-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+            
+            .noticeboard-header h1 {
+                font-size: 36px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .notices-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Fix for mobile touch */
+        button, a, .notice-card {
+            touch-action: manipulation;
+        }
+
+        /* Navbar spacing */
+        .navbar {
+            margin-bottom: 0 !important;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../includes/navbar') %>
+    
+    <div class="noticeboard-main">
+        <div class="noticeboard-header">
+            <h1><i class="fas fa-bullhorn"></i> 📢 NoticeBoard</h1>
+            <p>Stay updated with latest announcements and offers</p>
+        </div>
+
+        <div id="noticesContainer">
+            <!-- Loading state -->
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading notices...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Complete NoticeBoard JavaScript for Mobile
+        class NoticeBoard {
+            constructor() {
+                this.notices = [];
+                this.init();
+            }
+
+            async init() {
+                await this.fetchNotices();
+                this.setupMobileTouch();
+            }
+
+            async fetchNotices() {
+                try {
+                    // Fetch notices from your backend
+                    const response = await fetch('/api/notices');
+                    const data = await response.json();
+                    
+                    if (data.success && data.notices.length > 0) {
+                        this.notices = data.notices;
+                        this.renderNotices();
+                    } else {
+                        // If no notices in DB, show message
+                        this.showEmptyState();
+                    }
+                } catch (error) {
+                    console.error('Error fetching notices:', error);
+                    this.showEmptyState();
+                }
+            }
+
+            renderNotices() {
+                const container = document.getElementById('noticesContainer');
+                
+                if (!this.notices || this.notices.length === 0) {
+                    this.showEmptyState();
+                    return;
+                }
+
+                // Filter only active notices for public view
+                const activeNotices = this.notices.filter(notice => notice.isActive === true);
+                
+                if (activeNotices.length === 0) {
+                    this.showEmptyState();
+                    return;
+                }
+
+                let html = '<div class="notices-grid">';
+                
+                activeNotices.forEach(notice => {
+                    // Get image source
+                    let imageSrc = '';
+                    if (notice.imageFile) {
+                        imageSrc = notice.imageFile;
+                    } else if (notice.imageUrl) {
+                        imageSrc = notice.imageUrl;
+                    } else {
+                        imageSrc = null;
+                    }
+                    
+                    html += `
+                        <div class="notice-card" data-notice-id="${notice._id}">
+                            <div class="notice-image-wrapper">
+                                ${imageSrc ? `
+                                    <img src="${imageSrc}" 
+                                         alt="${this.escapeHtml(notice.title)}" 
+                                         class="notice-image"
+                                         loading="lazy"
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                                ` : `
+                                    <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-newspaper" style="font-size: 64px; color: white; opacity: 0.8;"></i>
+                                    </div>
+                                `}
+                                <span class="notice-badge">
+                                    <i class="fas fa-calendar-alt"></i> ${new Date(notice.createdAt).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <div class="notice-content">
+                                <h3 class="notice-title">${this.escapeHtml(notice.title)}</h3>
+                                <p class="notice-description">${this.truncate(this.escapeHtml(notice.content), 120)}</p>
+                                
+                                <div class="notice-meta">
+                                    <div class="notice-author">
+                                        <i class="fas fa-user-circle"></i>
+                                        <span>${this.escapeHtml(notice.author || 'Admin')}</span>
+                                    </div>
+                                    <span class="notice-status status-active">
+                                        <i class="fas fa-check-circle"></i> Active
+                                    </span>
+                                </div>
+                                
+                                <button class="view-details-btn" onclick="viewNoticeDetails('${notice._id}')">
+                                    <i class="fas fa-eye"></i> View Full Notice
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            showEmptyState() {
+                const container = document.getElementById('noticesContainer');
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullhorn"></i>
+                        <h3>No Notices Available</h3>
+                        <p class="text-muted">Check back later for updates and announcements!</p>
+                        <a href="/" class="btn btn-primary mt-3">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                `;
+            }
+
+            setupMobileTouch() {
+                // Improve touch feedback on mobile
+                const cards = document.querySelectorAll('.notice-card');
+                cards.forEach(card => {
+                    card.addEventListener('touchstart', function() {
+                        this.style.transform = 'scale(0.98)';
+                    });
+                    card.addEventListener('touchend', function() {
+                        this.style.transform = 'scale(1)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 100);
+                    });
+                });
+            }
+
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            truncate(text, length) {
+                if (!text) return '';
+                if (text.length <= length) return text;
+                return text.substring(0, length) + '...';
+            }
+        }
+
+        // Global function for view details
+        function viewNoticeDetails(noticeId) {
+            // You can customize this to show a modal or redirect
+            window.location.href = `/notices/${noticeId}`;
+        }
+
+        // Initialize when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                new NoticeBoard();
+            });
+        } else {
+            new NoticeBoard();
+        }
+
+        // Handle mobile orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
+        });
+    </script>
+</body>
+</html>

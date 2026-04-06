@@ -50,6 +50,7 @@ app.engine('ejs', ejsMate);
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
@@ -92,11 +93,50 @@ app.use((req, res, next) => {
   next();
 });
 
-// Use Routes - ORDER MATTERS!
+// ============ ROUTES - ORDER MATTERS! ============
 app.use('/', userRouter);                    // /signup, /login, /logout
-app.use('/notices', noticeRouter);           // /notices
+app.use('/notices', noticeRouter);           // /notices (Admin panel + API)
 app.use('/listings', listingRouter);         // /listings
 app.use('/listings/:id/reviews', reviewRouter); // reviews
+
+// ============ MOBILE NOTICEBOARD ROUTE ============
+// This creates a public mobile-friendly NoticeBoard page
+app.get('/noticeboard', async (req, res) => {
+  try {
+    const Notice = require('./models/notice');
+    const notices = await Notice.find({ isActive: true }).sort({ createdAt: -1 });
+    res.render('notices/mobile', { notices, currentUser: req.user });
+  } catch (err) {
+    console.error('NoticeBoard error:', err);
+    res.render('notices/mobile', { notices: [], currentUser: req.user });
+  }
+});
+
+// ============ API ROUTE FOR MOBILE NOTICEBOARD ============
+// This is used by the JavaScript fetch() call
+app.get('/api/notices', async (req, res) => {
+  try {
+    const Notice = require('./models/notice');
+    const notices = await Notice.find({ isActive: true }).sort({ createdAt: -1 });
+    res.json({ success: true, notices: notices });
+  } catch (err) {
+    console.error('API Error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+// Debug route to check images
+app.get('/debug-images', async (req, res) => {
+    const Notice = require('./models/notice');
+    const notices = await Notice.find({});
+    const imageInfo = notices.map(n => ({
+        title: n.title,
+        imageFile: n.imageFile,
+        imageUrl: n.imageUrl,
+        image: n.image,
+        fullPath: n.imageFile ? `http://localhost:8080${n.imageFile}` : null
+    }));
+    res.json(imageInfo);
+});
 
 // Root route
 app.get('/', (req, res) => {
@@ -148,11 +188,12 @@ async function startServer() {
     if (available) {
       app.listen(port + attempt, () => {
         console.log(` Server is running on port ${port + attempt}`);
-        console.log(` http://localhost:${port + attempt}`);
-        console.log(` http://localhost:${port + attempt}/listings`);
+        console.log(` NoticeBoard (Mobile): http://localhost:${port + attempt}/noticeboard`);
+        console.log(` Admin Panel: http://localhost:${port + attempt}/notices`);
+        console.log(` Listings: http://localhost:${port + attempt}/listings`);
         
         if (attempt > 0) {
-          console.log(`  Note: Port ${port} was busy, using port ${port + attempt} instead`);
+          console.log(` Note: Port ${port} was busy, using port ${port + attempt} instead`);
           console.log(` To use port ${port}, kill the process with:`);
           console.log(`   netstat -ano | findstr :${port}`);
           console.log(`   taskkill /PID [PID] /F`);
@@ -162,7 +203,7 @@ async function startServer() {
     }
   }
   
-  console.error(` Could not find an available port after ${maxAttempts} attempts`);
+  console.error(`❌ Could not find an available port after ${maxAttempts} attempts`);
   process.exit(1);
 }
 

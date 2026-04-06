@@ -20,3 +20,17 @@ module.exports.destroyReview = async (req, res) => {
   req.flash("success", "Review deleted!");
   res.redirect(`/listings/${id}`);
 };
+// controllers/reviewController.js
+const deleteReview = async (req, res) => {
+  try {
+    // Your deletion logic here
+    res.json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  deleteReview,
+  // other functions...
+};

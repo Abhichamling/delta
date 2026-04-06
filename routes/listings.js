@@ -8,6 +8,44 @@ const fs = require('fs');
 const { extractCoordinatesFromGoogleMapsUrl } = require('../utils/geo');
 const Notice = require('../models/notice');
 
+// ========== HELPER FUNCTION TO CLEAN ARRAY DATA ==========
+function cleanArrayField(data) {
+    if (!data) return [];
+    
+    // If it's already a simple array of strings
+    if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'string') {
+        return data.filter(item => item && item.trim() !== '');
+    }
+    
+    // If it's an array of objects (the problem case)
+    if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+        const result = [];
+        for (let obj of data) {
+            for (let key in obj) {
+                if (obj[key] && typeof obj[key] === 'string' && obj[key].trim() !== '') {
+                    result.push(obj[key].trim());
+                }
+            }
+        }
+        return result;
+    }
+    
+    // If it's a single string
+    if (typeof data === 'string') {
+        if (data.includes(',')) {
+            return data.split(',').map(item => item.trim()).filter(item => item !== '');
+        }
+        return data.trim() !== '' ? [data.trim()] : [];
+    }
+    
+    // If it's a single object
+    if (typeof data === 'object' && data !== null) {
+        return Object.values(data).filter(v => v && typeof v === 'string' && v.trim() !== '');
+    }
+    
+    return [];
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -218,12 +256,12 @@ router.get("/test/uploads", (req, res) => {
   `;
   
   if (error) {
-    html += `<p class="error">❌ Error: ${error}</p>`;
+    html += `<p class="error"> Error: ${error}</p>`;
   } else {
     html += `<p><strong>Files found:</strong> ${files.length}</p>`;
     
     if (files.length === 0) {
-      html += `<p class="error">⚠️ No files in uploads folder</p>`;
+      html += `<p class="error"> No files in uploads folder</p>`;
     } else {
       html += `<h3>Files:</h3>`;
       files.forEach(file => {
@@ -269,13 +307,20 @@ router.get("/map/search", async (req, res) => {
   }
 });
 
-// ========== POST ROUTE (CREATE) - WORKING VERSION ==========
+// ========== POST ROUTE (CREATE) - FIXED ==========
 router.post("/", isLoggedIn, upload.array('listing[images]', 30), async (req, res) => {
   try {
     console.log("========== NEW LISTING SUBMISSION ==========");
     console.log("Files received:", req.files ? req.files.length : 0);
     
     const listingData = { ...req.body.listing };
+    
+    // CLEAN AMENITIES AND EXPERIENCES - This fixes the error
+    listingData.amenities = cleanArrayField(listingData.amenities);
+    listingData.experiences = cleanArrayField(listingData.experiences);
+    
+    console.log("Cleaned amenities:", listingData.amenities);
+    console.log("Cleaned experiences:", listingData.experiences);
     
     // Handle Google Maps URL and extract coordinates
     if (listingData.googleMapsUrl && listingData.googleMapsUrl.trim() !== '') {
@@ -318,19 +363,6 @@ router.post("/", isLoggedIn, upload.array('listing[images]', 30), async (req, re
         filename: "default"
       }];
       console.log("No images uploaded, using default image");
-    }
-    
-    // Handle amenities and experiences
-    if (listingData.amenities && typeof listingData.amenities === 'string') {
-      listingData.amenities = listingData.amenities.split(',').map(a => a.trim()).filter(a => a !== '');
-    } else if (!listingData.amenities) {
-      listingData.amenities = [];
-    }
-    
-    if (listingData.experiences && typeof listingData.experiences === 'string') {
-      listingData.experiences = listingData.experiences.split(',').map(e => e.trim()).filter(e => e !== '');
-    } else if (!listingData.experiences) {
-      listingData.experiences = [];
     }
     
     // Validate required fields
@@ -382,11 +414,15 @@ router.get("/:id/edit", isLoggedIn, isOwner, async (req, res) => {
   }
 });
 
-// ========== UPDATE ROUTE ==========
+// ========== UPDATE ROUTE - FIXED ==========
 router.put('/:id', isLoggedIn, isOwner, upload.array('listing[images]', 30), async (req, res) => {
   try {
     const { id } = req.params;
-    const listingData = req.body.listing;
+    const listingData = { ...req.body.listing };
+    
+    // CLEAN AMENITIES AND EXPERIENCES - This fixes the error
+    listingData.amenities = cleanArrayField(listingData.amenities);
+    listingData.experiences = cleanArrayField(listingData.experiences);
     
     // Handle Google Maps URL
     if (listingData.googleMapsUrl && listingData.googleMapsUrl.trim() !== '') {
@@ -401,20 +437,6 @@ router.put('/:id', isLoggedIn, isOwner, upload.array('listing[images]', 30), asy
         listingData.categories = [listingData.categories];
       }
       listingData.categories = listingData.categories.filter(cat => cat && cat.trim() !== '');
-    }
-    
-    // Handle amenities
-    if (listingData.amenities && typeof listingData.amenities === 'string') {
-      listingData.amenities = listingData.amenities.split(',').map(a => a.trim()).filter(a => a !== '');
-    } else if (!listingData.amenities) {
-      listingData.amenities = [];
-    }
-    
-    // Handle experiences
-    if (listingData.experiences && typeof listingData.experiences === 'string') {
-      listingData.experiences = listingData.experiences.split(',').map(e => e.trim()).filter(e => e !== '');
-    } else if (!listingData.experiences) {
-      listingData.experiences = [];
     }
     
     // Handle new images
@@ -517,6 +539,28 @@ router.get("/debug/images", async (req, res) => {
         res.json(imageInfo);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// Mobile route
+router.get('/mobile', async (req, res) => {
+    try {
+        // Fetch data for mobile view
+        const listings = await Listing.find().limit(10);
+        const categories = await Category.find(); // if you have categories
+        const bookings = req.user ? await Booking.find({ user: req.user._id }) : [];
+        
+        res.render('listings/mobile-index', {
+            title: 'Airbnb - Mobile',
+            listings: listings,
+            categories: categories,
+            bookings: bookings,
+            currentUser: req.user,
+            messages: [] // Fetch messages if you have messaging system
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error loading mobile view');
     }
 });
 

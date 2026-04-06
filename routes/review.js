@@ -1,11 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router({ mergeParams: true });
-const Listing = require('../models/listing');
-const Review = require('../models/review');
-const { isLoggedIn } = require('../middleware');
+const Listing = require("../models/listing");
+const Review = require("../models/review");
+const { isLoggedIn, isReviewAuthor } = require("../middleware");
 
-// Create review
-router.post('/', isLoggedIn, async (req, res) => {
+// Create Review
+router.post("/", isLoggedIn, async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
     const review = new Review(req.body.review);
@@ -15,26 +15,28 @@ router.post('/', isLoggedIn, async (req, res) => {
     await review.save();
     await listing.save();
     
-    req.flash('success', 'Review added successfully');
+    req.flash("success", "Review added!");
     res.redirect(`/listings/${listing._id}`);
   } catch (err) {
-    req.flash('error', err.message);
+    console.log(err);
+    req.flash("error", "Failed to add review");
     res.redirect(`/listings/${req.params.id}`);
   }
 });
 
-// Delete review
-router.delete('/:reviewId', isLoggedIn, async (req, res) => {
+// Delete Review
+router.delete("/:reviewId", isLoggedIn, isReviewAuthor, async (req, res) => {
   try {
     const { id, reviewId } = req.params;
     
     await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
     await Review.findByIdAndDelete(reviewId);
     
-    req.flash('success', 'Review deleted');
+    req.flash("success", "Review deleted!");
     res.redirect(`/listings/${id}`);
   } catch (err) {
-    req.flash('error', err.message);
+    console.log(err);
+    req.flash("error", "Failed to delete review");
     res.redirect(`/listings/${req.params.id}`);
   }
 });
