@@ -4,21 +4,29 @@ const Notice = require('../models/notice');
 const wrapAsync = require('../utils/warapAsync');
 const multer = require('multer');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Configure multer for file upload
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
+// ============ CLOUDINARY CONFIGURATION ============
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET
+});
+
+// Configure Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'notices',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+        transformation: [{ width: 800, height: 600, crop: 'limit' }] // Optimize for mobile
     }
 });
 
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
 // Debug middleware
@@ -43,15 +51,16 @@ router.get('/api/notices', wrapAsync(async (req, res) => {
         const noticesWithFullUrls = notices.map(notice => {
             const noticeObj = notice.toObject();
             
-            // Fix image paths for mobile
+            // Fix image paths for mobile (Cloudinary URLs are already absolute)
             if (noticeObj.imageFile && noticeObj.imageFile.startsWith('/uploads/')) {
                 noticeObj.imageFile = `${protocol}://${host}${noticeObj.imageFile}`;
             }
-            if (noticeObj.imageUrl && noticeObj.imageUrl.startsWith('/uploads/')) {
+            // Cloudinary URLs are already full URLs, no need to modify
+            if (noticeObj.imageUrl && (noticeObj.imageUrl.startsWith('http://') || noticeObj.imageUrl.startsWith('https://'))) {
+                // Already absolute URL
+                noticeObj.imageUrl = noticeObj.imageUrl;
+            } else if (noticeObj.imageUrl && noticeObj.imageUrl.startsWith('/uploads/')) {
                 noticeObj.imageUrl = `${protocol}://${host}${noticeObj.imageUrl}`;
-            }
-            if (noticeObj.image && noticeObj.image.startsWith('/uploads/')) {
-                noticeObj.image = `${protocol}://${host}${noticeObj.image}`;
             }
             
             return noticeObj;
@@ -112,11 +121,11 @@ router.get('/new', wrapAsync(async (req, res) => {
     res.render('notices/new');
 }));
 
-// CREATE new notice
+// CREATE new notice (with Cloudinary upload)
 router.post('/', upload.single('image'), wrapAsync(async (req, res) => {
     console.log('===== CREATE NOTICE =====');
     console.log('Form data:', req.body);
-    console.log('Uploaded file:', req.file);
+    console.log('Cloudinary file:', req.file);
     
     const { title, content, author, imageUrl, isActive } = req.body;
     
@@ -132,10 +141,13 @@ router.post('/', upload.single('image'), wrapAsync(async (req, res) => {
         isActive: isActive === 'on' || isActive === 'true'
     };
     
+    // If file uploaded to Cloudinary
     if (req.file) {
-        noticeData.imageFile = '/uploads/' + req.file.filename;
+        noticeData.imageFile = req.file.path; // Cloudinary URL
+        console.log('✅ Image uploaded to Cloudinary:', req.file.path);
     }
     
+    // If external image URL provided
     if (imageUrl && imageUrl.trim() !== '') {
         noticeData.imageUrl = imageUrl.trim();
     }
@@ -143,7 +155,7 @@ router.post('/', upload.single('image'), wrapAsync(async (req, res) => {
     const notice = new Notice(noticeData);
     await notice.save();
     
-    req.flash('success', 'Notice published successfully!');
+    req.flash('success', 'Notice published successfully with Cloudinary image!');
     res.redirect('/notices');
 }));
 
@@ -167,7 +179,7 @@ router.get('/:id/edit', wrapAsync(async (req, res) => {
     res.render('notices/edit', { notice });
 }));
 
-// UPDATE notice
+// UPDATE notice (with Cloudinary upload)
 router.put('/:id', upload.single('image'), wrapAsync(async (req, res) => {
     const { id } = req.params;
     const { title, content, author, imageUrl, isActive } = req.body;
@@ -179,10 +191,13 @@ router.put('/:id', upload.single('image'), wrapAsync(async (req, res) => {
         isActive: isActive === 'on' || isActive === 'true'
     };
     
+    // If new file uploaded to Cloudinary
     if (req.file) {
-        noticeData.imageFile = '/uploads/' + req.file.filename;
+        noticeData.imageFile = req.file.path; // Cloudinary URL
+        console.log('✅ Updated image uploaded to Cloudinary:', req.file.path);
     }
     
+    // If external image URL provided
     if (imageUrl && imageUrl.trim() !== '') {
         noticeData.imageUrl = imageUrl.trim();
     }
@@ -192,8 +207,22 @@ router.put('/:id', upload.single('image'), wrapAsync(async (req, res) => {
     res.redirect(`/notices/${id}`);
 }));
 
-// DELETE notice
+// DELETE notice (optionally delete from Cloudinary too)
 router.delete('/:id', wrapAsync(async (req, res) => {
+    const notice = await Notice.findById(req.params.id);
+    
+    // Optional: Delete image from Cloudinary
+    if (notice.imageFile && notice.imageFile.includes('cloudinary')) {
+        try {
+            // Extract public ID from Cloudinary URL
+            const publicId = notice.imageFile.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(`notices/${publicId}`);
+            console.log('✅ Deleted image from Cloudinary');
+        } catch (err) {
+            console.error('Failed to delete from Cloudinary:', err);
+        }
+    }
+    
     await Notice.findByIdAndDelete(req.params.id);
     req.flash('success', 'Notice deleted successfully!');
     res.redirect('/notices');
