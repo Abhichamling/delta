@@ -563,5 +563,21 @@ router.get('/mobile', async (req, res) => {
         res.status(500).send('Error loading mobile view');
     }
 });
-
+// When rendering index page with map
+router.get('/', async (req, res) => {
+    const allListings = await Listing.find({});
+    
+    // Format listings for map (with coordinates)
+    const listingsForMap = allListings.map(listing => ({
+        _id: listing._id,
+        title: listing.title,
+        location: listing.location,
+        geometry: listing.geometry  // Make sure this exists in your schema
+    }));
+    
+    res.render('listings/index.ejs', { 
+        listings: allListings,
+        localListings: listingsForMap  // Pass to map
+    });
+});
 module.exports = router;

@@ -39,7 +39,7 @@ const listingSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  // Google Maps Link - NEW FIELD ADDED HERE
+  // Google Maps Link
   googleMapsUrl: {
     type: String,
     default: ''
@@ -47,11 +47,23 @@ const listingSchema = new mongoose.Schema({
   // Coordinates for map
   longitude: {
     type: Number,
-    default: 85.3240 // Default to Kathmandu
+    default: 85.3240
   },
   latitude: {
     type: Number,
-    default: 27.7172 // Default to Kathmandu
+    default: 27.7172
+  },
+  // Geometry for geospatial queries (ALWAYS VISIBLE PIN)
+  geometry: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: [85.3240, 27.7172] // [longitude, latitude]
+    }
   },
   // Multiple categories (for new listings)
   categories: [{
@@ -98,15 +110,38 @@ const listingSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-// Pre-save middleware to ensure category is set from categories
+// Pre-save middleware to sync coordinates with geometry
 listingSchema.pre('save', function(next) {
+  // Sync categories
   if (this.categories && this.categories.length > 0 && !this.category) {
     this.category = this.categories[0];
   }
   if (this.category && (!this.categories || this.categories.length === 0)) {
     this.categories = [this.category];
   }
+  
+  // Sync geometry with coordinates
+  if (this.longitude && this.latitude) {
+    this.geometry.coordinates = [this.longitude, this.latitude];
+  }
+  
   next();
 });
+
+// Pre-update middleware to keep geometry in sync
+listingSchema.pre('findOneAndUpdate', function(next) {
+  const update = this.getUpdate();
+  if (update.longitude && update.latitude) {
+    update.geometry = {
+      type: 'Point',
+      coordinates: [update.longitude, update.latitude]
+    };
+  }
+  next();
+});
+
+// Add geospatial index for faster queries
+listingSchema.index({ geometry: '2dsphere' });
+listingSchema.index({ longitude: 1, latitude: 1 });
 
 module.exports = mongoose.model("Listing", listingSchema);
